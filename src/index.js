@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import PreviewControls from "./PreviewControls";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 let camera, controls, scene, renderer;
 
@@ -21,41 +21,35 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(400, 200, 0);
-
-  // controls
-
-  controls = new PreviewControls(camera, renderer.domElement);
-  // controls.listenToKeyEvents(window); // optional
-
-  //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
-
-  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.05;
-
-  controls.screenSpacePanning = false;
-
-  controls.minDistance = 100;
-  controls.maxDistance = 500;
-
-  controls.maxPolarAngle = Math.PI / 2;
+  camera.position.set(0, 3, 5);
 
   // world
+  const loader = new GLTFLoader()
 
-  const geometry = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
-  const material = new THREE.MeshPhongMaterial({color: 0xffffff, flatShading: true});
+  loader.load('../model/Duck.gltf', function (gltf) {
+    const object = gltf.scene
+    scene.add(object)
 
-  for (let i = 0; i < 500; i++) {
+    // controls
 
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.x = Math.random() * 1600 - 800;
-    mesh.position.y = 0;
-    mesh.position.z = Math.random() * 1600 - 800;
-    mesh.updateMatrix();
-    mesh.matrixAutoUpdate = false;
-    scene.add(mesh);
+    controls = new PreviewControls(object, camera, renderer.domElement);
+    // controls.listenToKeyEvents(window); // optional
 
-  }
+    //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+
+    controls.enableDamping = false; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.dampingFactor = 0.03;
+
+    controls.minDistance = 100;
+    controls.maxDistance = 500;
+
+    controls.maxPolarAngle = Math.PI / 2;
+
+    scene.add(controls)
+
+  }, null, function (error) {
+    console.error(error)
+  })
 
   // lights
 
@@ -89,7 +83,7 @@ function animate() {
 
   requestAnimationFrame(animate);
 
-  controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
+  controls && controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
 
   render();
 
